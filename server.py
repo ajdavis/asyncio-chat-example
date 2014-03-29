@@ -1,29 +1,34 @@
 import asyncio
 import logging
 
-# https://pypi.python.org/pypi/websockets
-import websockets
+from autobahn.asyncio.websocket import (WebSocketServerProtocol,
+                                        WebSocketServerFactory)
 
 clients = set()
 logging.basicConfig(level=logging.INFO)
 
 
-@asyncio.coroutine
-def chat(websocket, uri):
-    clients.add(websocket)
-    while True:
-        msg = yield from websocket.recv()
-        if msg is None:
-            return
+class MyServerProtocol(WebSocketServerProtocol):
+    def onConnect(self, request):
+        clients.add(self)
 
-        print(msg)
-        for client in clients.copy():
-            if client is not websocket:
+    def onMessage(self, payload, is_binary):
+        for c in clients.copy():
+            if c is not self:
                 try:
-                    yield from client.send(msg)
-                except websockets.exceptions.InvalidState:
-                    clients.remove(client)
+                    c.sendMessage(payload, is_binary)
+                except Exception as e:
+                    print(e)
+                    clients.remove(c)
 
-start_server = websockets.serve(chat, 'localhost', 8765)
-asyncio.Task(start_server)
+    def onClose(self, was_clean, code, reason):
+        clients.remove(self)
+
+factory = WebSocketServerFactory("ws://localhost:8765")
+factory.protocol = MyServerProtocol
+
+
+loop = asyncio.get_event_loop()
+create_server = loop.create_server(factory, '127.0.0.1', 8765)
+asyncio.Task(create_server)
 asyncio.get_event_loop().run_forever()
