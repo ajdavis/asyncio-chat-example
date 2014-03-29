@@ -48,7 +48,7 @@ var updater = {
     },
 
     showMessage: function(msg, isFromRemote) {
-        var node = $('<p>' + msg + '</p>');
+        var node = $('<p>' + msg + '&nbsp;</p>');
         node.addClass('msg');
         node.addClass(isFromRemote ? 'remote': 'local');
         node.hide();
