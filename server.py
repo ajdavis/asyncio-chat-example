@@ -25,5 +25,5 @@ def chat(websocket, uri):
                     clients.remove(client)
 
 start_server = websockets.serve(chat, 'localhost', 8765)
-asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.Task(start_server)
 asyncio.get_event_loop().run_forever()
