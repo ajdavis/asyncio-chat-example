@@ -10,12 +10,10 @@ logging.basicConfig(level=logging.INFO)
 
 @asyncio.coroutine
 def chat(websocket, uri):
-    print('open')
     clients.add(websocket)
     while True:
         msg = yield from websocket.recv()
         if msg is None:
-            print('close')
             return
 
         print(msg)
