@@ -28,26 +28,47 @@ var updater = {
     socket: null,
 
     start: function() {
+        updater.setStatus('opening');
+
         var url = 'ws://localhost:8765/';
-        var ws = new WebSocket(url);
-        ws.onopen = ws.onclose = ws.onerr = function(event) {
-            var codes = {
-                0: "opening",
-                1: "open",
-                2: "closing",
-                3: "closed"};
+        var connected = false;
 
-            $('#status').html(codes[updater.socket.readyState]);
-        };
+        // React to connection status periodically.
+        function poll() {
+            if (connected) return;
 
-        ws.onmessage = function(event) {
-            updater.showMessage(JSON.parse(event.data).msg, true);
-        };
+            // Reconnect.
+            var ws = new WebSocket(url);
 
-        updater.socket = ws;
+            // On state-change, display status and decide whether to reconnect.
+            ws.onopen = ws.onclose = ws.onerr = function() {
+                var code = ws.readyState;
+                var codes = {
+                    0: "opening",
+                    1: "open",
+                    2: "closing",
+                    3: "closed"};
+
+                updater.setStatus(codes[code]);
+                connected = (code == 0 || code == 1);
+            };
+
+            ws.onmessage = function(event) {
+                updater.showMessage(JSON.parse(event.data).msg, true);
+            };
+
+            updater.socket = ws;
+        }
+
+        setInterval(poll, 100);
+    },
+
+    setStatus: function(status) {
+        $('#status').html(status);
     },
 
     showMessage: function(msg, isFromRemote) {
+        // Including nbsp allows empty messages to appear as blank paragraphs.
         var node = $('<p>' + msg + '&nbsp;</p>');
         node.addClass('msg');
         node.addClass(isFromRemote ? 'remote': 'local');
