@@ -29,10 +29,22 @@ var updater = {
 
     start: function() {
         var url = 'ws://localhost:8765/';
-        updater.socket = new WebSocket(url);
-        updater.socket.onmessage = function(event) {
+        var ws = new WebSocket(url);
+        ws.onopen = ws.onclose = ws.onerr = function(event) {
+            var codes = {
+                0: "opening",
+                1: "open",
+                2: "closing",
+                3: "closed"};
+
+            $('#status').html(codes[updater.socket.readyState]);
+        };
+
+        ws.onmessage = function(event) {
             updater.showMessage(JSON.parse(event.data).msg, true);
-        }
+        };
+
+        updater.socket = ws;
     },
 
     showMessage: function(msg, isFromRemote) {
