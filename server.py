@@ -8,7 +8,7 @@ clients = set()
 logging.basicConfig(level=logging.INFO)
 
 
-class MyServerProtocol(WebSocketServerProtocol):
+class ChatProtocol(WebSocketServerProtocol):
     def onConnect(self, request):
         clients.add(self)
 
@@ -25,7 +25,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         clients.remove(self)
 
 factory = WebSocketServerFactory("ws://localhost:8765")
-factory.protocol = MyServerProtocol
+factory.protocol = ChatProtocol
 
 
 loop = asyncio.get_event_loop()
