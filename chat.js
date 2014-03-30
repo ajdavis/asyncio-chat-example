@@ -41,7 +41,7 @@ var updater = {
             var ws = new WebSocket(url);
 
             // On state-change, display status and decide whether to reconnect.
-            ws.onopen = ws.onclose = ws.onerr = function() {
+            ws.onopen = ws.onclose = ws.onerror = function() {
                 var code = ws.readyState;
                 var codes = {
                     0: "opening",
@@ -57,6 +57,8 @@ var updater = {
                 updater.showMessage(JSON.parse(event.data).msg, true);
             };
 
+            // State is now "opening", although it may fail in the future.
+            connected = true;
             updater.socket = ws;
         }
 
