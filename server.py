@@ -28,6 +28,5 @@ factory = WebSocketServerFactory("ws://localhost:8765")
 factory.protocol = ChatProtocol
 
 loop = asyncio.get_event_loop()
-create_server = loop.create_server(factory, port=8765)
-asyncio.Task(create_server)
+asyncio.Task(loop.create_server(factory, port=8765))
 loop.run_forever()
